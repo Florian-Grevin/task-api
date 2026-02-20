@@ -1,16 +1,19 @@
+# ============================================
+# CI Workflow optimisé pour TaskAPI
+# Version 2 : avec cache et variables
+# ============================================
+
 name: CI - Tests TaskAPI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 env:
-  NODE_ENV: test 
-  APP_NAME: task-api
+  NODE_ENV: test
+  CI: true
 
 jobs:
   test:
@@ -18,47 +21,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      # 2. Setup Node.js AVEC cache npm ⚡
+      - name: Setup Node.js 20 avec cache
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
 
+      # 3. Installer les dépendances
       - name: Installer les dépendances
         run: npm ci
 
-      - name: Afficher les variables d'environnement
-        run: echo "Env=$NODE_ENV App=$APP_NAME Node=$(node -v)"
-
+      # 4. Lancer les tests
       - name: Lancer les tests
         run: npm test
 
-  deploy:
-    name: Déploiement via SSH
-    runs-on: ubuntu-latest
-    needs: test   # ⬅️ NE DÉPLOIE QUE SI LES TESTS PASSENT
-
-    if: github.ref == 'refs/heads/main'   # ⬅️ Déploiement uniquement sur main
-
-    steps:
-      - name: Checkout du code
-        uses: actions/checkout@v4
-
-      - name: Déployer via SSH
-        env:
-          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          HOST: ${{ secrets.SSH_HOST }}
-          USER: ${{ secrets.SSH_USER }}
+      # 5. Afficher le résumé
+      - name: Résumé
+        if: always()
         run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $USER@$HOST "
-            cd /var/www/task-api &&
-            git pull &&
-            npm ci &&
-            pm2 reload all
-          "
+          echo "## Résultat CI" >> $GITHUB_STEP_SUMMARY
+          echo "- Node.js: $(node -v)" >> $GITHUB_STEP_SUMMARY
+          echo "- npm: $(npm -v)" >> $GITHUB_STEP_SUMMARY
+          echo "- Env: $NODE_ENV" >> $GITHUB_STEP_SUMMARY
