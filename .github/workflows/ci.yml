@@ -42,7 +42,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "200"
           cache: "npm"
       - run: npm ci
       - name: Exécuter les tests
@@ -51,30 +51,30 @@ jobs:
   # ═══════════════════════════════════
   # JOB 3 : Déploiement (conditionnel)
   # ═══════════════════════════════════
-  #deploy:
-  #  name: Deploy - Production
-  #  needs: [lint, test]
-  #  runs-on: ubuntu-latest
-  #  # Déployer UNIQUEMENT sur push vers main (pas les PR)
-  #  if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-#
-  #  steps:
-  #    - name: Déploiement SSH
-  #      uses: appleboy/ssh-action@v1
-  #      with:
-  #        host: ${{ secrets.SSH_HOST }}
-  #        username: ${{ secrets.SSH_USER }}
-  #        key: ${{ secrets.SSH_PRIVATE_KEY }}
-  #        port: ${{ secrets.SSH_PORT }}
-  #        script: |
-  #          cd /var/www/task-api
-  #          git pull origin main
-  #          npm ci --production
-  #          pm2 reload task-api
-#
-  #    - name: Résumé du déploiement
-  #      run: |
-  #        echo "## 🚀 Déploiement réussi" >> $GITHUB_STEP_SUMMARY
-  #        echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-  #        echo "- Par: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
-  #        echo "- Date: $(date)" >> $GITHUB_STEP_SUMMARY
+  deploy:
+    name: Deploy - Production
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    # Déployer UNIQUEMENT sur push vers main (pas les PR)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Déploiement SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /var/www/task-api
+            git pull origin main
+            npm ci --production
+            pm2 reload task-api
+
+      - name: Résumé du déploiement
+        run: |
+          echo "## 🚀 Déploiement réussi" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Par: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Date: $(date)" >> $GITHUB_STEP_SUMMARY
