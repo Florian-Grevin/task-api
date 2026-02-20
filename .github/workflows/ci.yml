@@ -48,3 +48,5 @@ jobs:
           echo "- Node.js: $(node -v)" >> $GITHUB_STEP_SUMMARY
           echo "- npm: $(npm -v)" >> $GITHUB_STEP_SUMMARY
           echo "- Env: $NODE_ENV" >> $GITHUB_STEP_SUMMARY
+
+      # 6. MON COMMENTAIRE PAS SI UTILE
