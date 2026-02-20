@@ -1,8 +1,9 @@
+
 {
-  "name": "task-api",
+  "name": "task-manager-api",
   "version": "1.0.0",
-  "description": "API REST de gestion de tâches — Projet fil rouge CI/CD",
-  "main": "src/app.js",
+  "description": "API REST de gestion de tâches — Projet CI/CD avec PM2 & GitHub Actions",
+  "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
     "dev": "pm2 start ecosystem.config.js",
@@ -17,19 +18,17 @@
     "test": "jest --verbose --forceExit --detectOpenHandles",
     "test:watch": "jest --watch --verbose"
   },
-  "keywords": [
-    "express",
-    "api",
-    "cicd",
-    "pm2"
-  ],
-  "author": "Votre Nom",
+  "keywords": ["express", "pm2", "cicd", "api", "rest"],
+  "author": "Votre nom",
   "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
-    "express": "^5.2.1"
+    "express": "^4.x.x"
   },
   "devDependencies": {
-    "jest": "^30.2.0",
-    "supertest": "^7.2.2"
+    "jest": "^29.x.x",
+    "supertest": "^6.x.x"
   }
 }
