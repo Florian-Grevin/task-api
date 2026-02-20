@@ -1,0 +1,41 @@
+# ============================================
+# CI Workflow pour TaskAPI
+# Fichier : .github/workflows/ci.yml
+# ============================================
+
+# ── BLOC 1 : Nom du workflow ──
+name: CI - Tests TaskAPI
+
+# ── BLOC 2 : Quand déclencher ? ──
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# ── BLOC 3 : Les jobs ──
+jobs:
+  test:
+    name: Tests unitaires
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Récupérer le code du dépôt
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      # 2. Installer Node.js sur le runner
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # 3. Installer les dépendances (npm ci = install propre)
+      - name: Installer les dépendances
+        run: npm ci
+
+      # 4. Exécuter les tests Jest
+      - name: Lancer les tests
+        run: npm test
