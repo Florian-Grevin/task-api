@@ -1,12 +1,5 @@
-# ============================================
-# CI Workflow pour TaskAPI
-# Fichier : .github/workflows/ci.yml
-# ============================================
-
-# ── BLOC 1 : Nom du workflow ──
 name: CI - Tests TaskAPI
 
-# ── BLOC 2 : Quand déclencher ? ──
 on:
   push:
     branches:
@@ -15,27 +8,57 @@ on:
     branches:
       - main
 
-# ── BLOC 3 : Les jobs ──
+env:
+  NODE_ENV: test 
+  APP_NAME: task-api
+
 jobs:
   test:
     name: Tests unitaires
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Récupérer le code du dépôt
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      # 2. Installer Node.js sur le runner
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      # 3. Installer les dépendances (npm ci = install propre)
       - name: Installer les dépendances
         run: npm ci
 
-      # 4. Exécuter les tests Jest
+      - name: Afficher les variables d'environnement
+        run: echo "Env=$NODE_ENV App=$APP_NAME Node=$(node -v)"
+
       - name: Lancer les tests
         run: npm test
+
+  deploy:
+    name: Déploiement via SSH
+    runs-on: ubuntu-latest
+    needs: test   # ⬅️ NE DÉPLOIE QUE SI LES TESTS PASSENT
+
+    if: github.ref == 'refs/heads/main'   # ⬅️ Déploiement uniquement sur main
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Déployer via SSH
+        env:
+          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          HOST: ${{ secrets.SSH_HOST }}
+          USER: ${{ secrets.SSH_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $USER@$HOST "
+            cd /var/www/task-api &&
+            git pull &&
+            npm ci &&
+            pm2 reload all
+          "
